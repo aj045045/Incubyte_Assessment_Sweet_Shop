@@ -11,6 +11,7 @@ import { useZodForm } from "@/lib/use-zod-form"
 import { signUpFormSchema } from "@/interface/form";
 import * as z from "zod";
 
+/* This code snippet defines a functional component called `SignUpForm` in TypeScript React. */
 export function SignUpForm() {
     const form = useZodForm(signUpFormSchema, { defaultValues: { email: "", password: "", username: "", } });
 
