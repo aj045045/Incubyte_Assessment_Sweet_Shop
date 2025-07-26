@@ -10,6 +10,13 @@ import pytest_asyncio
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def clean_db():
+    """Clean database before each test function.
+
+    This fixture runs automatically before every test to:
+    - Connect to MongoDB
+    - Initialize Beanie ODM
+    - Clear collections: User, Sweet, and Category
+    """
     client = AsyncIOMotorClient(env_settings.MONGO_URI)
     await init_beanie(
         database=client.sweet_shop,
@@ -22,12 +29,22 @@ async def clean_db():
 
 @pytest_asyncio.fixture
 async def client():
+    """Returns an HTTPX AsyncClient instance for making async API calls during tests."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
 async def register_and_login(client, is_admin=False):
+    """Registers and logs in a test user.
+
+    Args:
+        client (AsyncClient): Test client instance.
+        is_admin (bool): Whether to register the user as admin.
+
+    Returns:
+        str: Bearer token for authorization.
+    """
     user_data = {
         "username": "TestAdmin" if is_admin else "TestUser",
         "email": "admin@example.com" if is_admin else "user@example.com",
@@ -37,15 +54,22 @@ async def register_and_login(client, is_admin=False):
     await client.post("/api/auth/register", json=user_data)
     response = await client.post(
         "/api/auth/login",
-        json={
-            "email": user_data["email"],
-            "password": user_data["password"],
-        },
+        json={"email": user_data["email"], "password": user_data["password"]},
     )
     return f"Bearer {response.json()['data']['token']}"
 
 
 async def create_category(client, token, name="Indian"):
+    """Helper function to create a category.
+
+    Args:
+        client (AsyncClient): HTTP test client.
+        token (str): Authorization token.
+        name (str, optional): Category name. Defaults to "Indian".
+
+    Returns:
+        str: Category ID from the created category.
+    """
     res = await client.post(
         "/api/sweets/categories", json={"name": name}, headers={"Authorization": token}
     )
@@ -54,6 +78,7 @@ async def create_category(client, token, name="Indian"):
 
 @pytest.mark.asyncio
 async def test_add_sweet(client):
+    """Test adding a new sweet to the shop."""
     token = await register_and_login(client)
     category_id = await create_category(client, token)
 
@@ -64,35 +89,36 @@ async def test_add_sweet(client):
     )
     assert response.status_code == 201
     data = response.json()
-
     assert data["data"]["name"] == "Ladoo"
     assert data["data"]["quantity"] == 100
 
 
 @pytest.mark.asyncio
 async def test_get_all_sweets(client):
+    """Test retrieving all sweets after adding one."""
     token = await register_and_login(client)
-    sweet_data = {
-        "name": "Test Sweet",
-        "price": 10.99,
-        "quantity": 100,
-        "category": "some_valid_category_id",
-    }
 
+    # Create a category
     category_resp = await client.post(
         "/api/sweets/categories",
         json={"name": "Test Category"},
         headers={"Authorization": token},
     )
-
     category_id = category_resp.json()["data"]["_id"]
-    sweet_data["category"] = category_id
 
-    response_sweet = await client.post(
+    # Add a sweet to that category
+    await client.post(
         "/api/sweets",
-        json=sweet_data,
+        json={
+            "name": "Test Sweet",
+            "price": 10.99,
+            "quantity": 100,
+            "category": category_id,
+        },
         headers={"Authorization": token},
     )
+
+    # Retrieve all sweets
     response = await client.get("/api/sweets", headers={"Authorization": token})
     assert response.status_code == 200
     assert len(response.json()["data"]) > 0
@@ -100,10 +126,13 @@ async def test_get_all_sweets(client):
 
 @pytest.mark.asyncio
 async def test_search_sweets(client):
+    """Test searching for sweets by category name."""
     token = await register_and_login(client)
+
     indian_id = await create_category(client, token, "Indian")
     street_id = await create_category(client, token, "Street")
 
+    # Create sweets under two categories
     await client.post(
         "/api/sweets",
         json={"name": "Kaju Katli", "category": indian_id, "price": 50, "quantity": 20},
@@ -115,6 +144,7 @@ async def test_search_sweets(client):
         headers={"Authorization": token},
     )
 
+    # Search sweets under "Indian" category
     response = await client.get(
         "/api/sweets/search?category=Indian", headers={"Authorization": token}
     )
@@ -125,6 +155,7 @@ async def test_search_sweets(client):
 
 @pytest.mark.asyncio
 async def test_update_sweet(client):
+    """Test updating a sweet's name, category, price, and quantity."""
     token = await register_and_login(client)
     category_id = await create_category(client, token)
     updated_category_id = await create_category(client, token, "Fusion")
@@ -135,7 +166,6 @@ async def test_update_sweet(client):
         headers={"Authorization": token},
     )
     sweet_id = create_res.json()["data"]["_id"]
-    print("Create response", create_res.json())
 
     update_res = await client.put(
         f"/api/sweets/{sweet_id}",
@@ -147,7 +177,6 @@ async def test_update_sweet(client):
         },
         headers={"Authorization": token},
     )
-    print("Update response", update_res.json())
     assert update_res.status_code == 200
     assert update_res.json()["data"]["name"] == "Chocolate Barfi"
     assert update_res.json()["data"]["quantity"] == 45
@@ -155,6 +184,7 @@ async def test_update_sweet(client):
 
 @pytest.mark.asyncio
 async def test_delete_sweet_as_admin(client):
+    """Test deleting a sweet as an admin user."""
     token = await register_and_login(client)
     admin_token = await register_and_login(client, is_admin=True)
     category_id = await create_category(client, token)
@@ -175,6 +205,7 @@ async def test_delete_sweet_as_admin(client):
 
 @pytest.mark.asyncio
 async def test_delete_sweet_as_non_admin(client):
+    """Test trying to delete a sweet as a non-admin user (should be forbidden)."""
     token = await register_and_login(client)
     category_id = await create_category(client, token)
 

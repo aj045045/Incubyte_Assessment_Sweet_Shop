@@ -11,6 +11,18 @@ sweet_router = APIRouter(prefix="/api/sweets", tags=["Sweets"])
 
 @sweet_router.post("", status_code=201, response_model=ResponseData)
 async def add_sweet(data: SweetCreate, user=Depends(get_current_user)):
+    """Add a new sweet item to the inventory.
+
+    Args:
+        data (SweetCreate): The data required to create a new sweet (name, category ID, price, quantity).
+        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
+
+    Raises:
+        HTTPException: If the provided category ID does not exist.
+
+    Returns:
+        ResponseData: Contains the created sweet object.
+    """
     category = await CategoryModel.get(data.category)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -30,6 +42,19 @@ async def add_sweet(data: SweetCreate, user=Depends(get_current_user)):
     "/categories", status_code=status.HTTP_201_CREATED, response_model=ResponseData
 )
 async def add_sweet_category(data: CategoryCreate, user=Depends(get_current_user)):
+    """Add a new sweet category.
+
+    Args:
+        data (CategoryCreate): The name of the category to create.
+        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
+
+    Raises:
+        HTTPException: If a category with the given name already exists.
+
+    Returns:
+        ResponseData: The created category object with its ID and name.
+    """
+
     category_exists = await CategoryModel.find_one(CategoryModel.name == data.name)
 
     if category_exists:
@@ -46,7 +71,12 @@ async def add_sweet_category(data: CategoryCreate, user=Depends(get_current_user
 
 
 @sweet_router.get("", status_code=200, response_model=ResponseData)
-async def list_sweets():
+async def list_sweets(user=Depends(get_current_user)):
+    """Retrieve a list of all sweets along with their category info.
+
+    Returns:
+        ResponseData: A list of all sweets, each including its name and category details.
+    """
     sweets = await SweetModel.find_all().to_list()
     sweet_list = []
 
@@ -76,6 +106,18 @@ async def search_sweets(
     max_price: Optional[float] = None,
     user=Depends(get_current_user),
 ):
+    """Search sweets using filters like name, category, and price range.
+
+    Args:
+        name (Optional[str], optional): Sweet name (partial or full) to search. Defaults to None.
+        category (Optional[str], optional): Category name to filter sweets. Defaults to None.
+        min_price (Optional[float], optional): Minimum price of sweets. Defaults to None.
+        max_price (Optional[float], optional): Maximum price of sweets. Defaults to None.
+        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
+
+    Returns:
+        ResponseData: A filtered list of sweets that match the criteria.
+    """
     query = {}
     if name:
         query["name"] = {"$regex": name, "$options": "i"}
@@ -104,7 +146,19 @@ async def search_sweets(
 async def update_sweet(
     sweet_id: PydanticObjectId, data: SweetUpdate, user=Depends(get_current_user)
 ):
-    # Get sweet by ID
+    """Update a sweet's details such as name, price, quantity, or category.
+
+    Args:
+        sweet_id (PydanticObjectId): The ID of the sweet to be updated.
+        data (SweetUpdate): Fields to update (can be partial).
+        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
+
+    Raises:
+        HTTPException: If the sweet or new category ID does not exist.
+
+    Returns:
+        ResponseData: Updated sweet object with category info.
+    """
     sweet = await SweetModel.get(sweet_id)
     if not sweet:
         raise HTTPException(status_code=404, detail="Sweet not found")
@@ -142,6 +196,18 @@ async def update_sweet(
 
 @sweet_router.delete("/{sweet_id}", status_code=200, response_model=ResponseData)
 async def delete_sweet(sweet_id: str, user=Depends(get_admin_user)):
+    """Delete a sweet from the inventory (admin only).
+
+    Args:
+        sweet_id (str): The ID of the sweet to be deleted.
+        user (_type_, optional): Authenticated admin user. Defaults to Depends(get_admin_user).
+
+    Raises:
+        HTTPException: If the sweet does not exist.
+
+    Returns:
+        ResponseData: Success message confirming deletion.
+    """
     sweet = await SweetModel.get(sweet_id)
     if not sweet:
         raise HTTPException(status_code=404, detail="Sweet not found")
