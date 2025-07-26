@@ -3,12 +3,22 @@ from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from .env import env_settings
-from passlib.context import CryptContext
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """
+    Generates a signed JWT access token.
+
+    Args:
+        data (dict): Payload to encode into the JWT (e.g., {"sub": user.email, "role": user.role}).
+        expires_delta (timedelta, optional): Optional custom expiration time.
+
+    Returns:
+        str: Encoded JWT token string.
+    """
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=env_settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -20,6 +30,18 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
+    """
+    Decodes the JWT and extracts user information from it.
+
+    Args:
+        token (str): JWT token extracted from the request Authorization header.
+
+    Raises:
+        HTTPException: If the token is invalid or missing required fields.
+
+    Returns:
+        dict: Dictionary containing user information such as email and role.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
@@ -36,14 +58,3 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         return {"email": email, "role": role}
     except JWTError:
         raise credentials_exception
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
