@@ -18,10 +18,10 @@ mongodb-clean: mongodb-stop
 	docker network rm mongo-network || true
 
 server:
-	cd server && poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	cd server && poetry run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
 test:
-	cd server && PYTHONDONTWRITEBYTECODE=1 poetry run pytest
+	cd server && poetry run pytest
 
 # Next.js app
 client:

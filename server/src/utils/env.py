@@ -8,8 +8,11 @@ class EnvSettings(BaseSettings):
     Auto-loads from .env file and system environment.
     """
 
-    MONGO_URI: str = Field(..., description="MongoDB connection string")
-    MONGO_DB: str = Field(..., description="MongoDB database name")
+    MONGO_URI: str = Field(...)
+    MONGO_DB: str = Field(...)
+    SECRET_KEY: str = Field(...)
+    ALGORITHM: str = Field(...)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(...)
 
     model_config = SettingsConfigDict(
         env_file=".env",
