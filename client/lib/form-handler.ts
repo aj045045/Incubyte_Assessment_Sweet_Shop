@@ -84,7 +84,7 @@ export class FormHandler {
                 toast.error("Server error");
                 return;
             } else {
-                toast.success(successText);
+                toast.success(result.message || successText);
             }
         } catch (error) {
             toast.error('An error occurred: ' + (error instanceof Error ? error.message : error));
@@ -135,7 +135,7 @@ export class FormHandler {
                 toast.error("Server error");
                 return;
             } else {
-                toast.success(successText);
+                toast.success(result.message || successText);
             }
         } catch (error) {
             toast.error('An error occurred: ' + (error instanceof Error ? error.message : error));
