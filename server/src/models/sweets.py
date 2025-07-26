@@ -18,7 +18,7 @@ class SweetModel(Document):
 
     name: str = Field(..., max_length=50)
     category: Link[CategoryModel]
-    price: int = Field(..., ge=0)
+    price: float = Field(..., ge=0)
     quantity: int = Field(..., ge=0)
 
     class Settings:

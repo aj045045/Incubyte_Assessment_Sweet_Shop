@@ -47,9 +47,9 @@ async def register_and_login(client, is_admin=False):
 
 async def create_category(client, token, name="Indian"):
     res = await client.post(
-        "/api/categories", json={"name": name}, headers={"Authorization": token}
+        "/api/sweets/categories", json={"name": name}, headers={"Authorization": token}
     )
-    return res.json()["data"]["id"]
+    return res.json()["data"]["_id"]
 
 
 @pytest.mark.asyncio
@@ -64,6 +64,7 @@ async def test_add_sweet(client):
     )
     assert response.status_code == 201
     data = response.json()
+
     assert data["data"]["name"] == "Ladoo"
     assert data["data"]["quantity"] == 100
 
@@ -71,9 +72,25 @@ async def test_add_sweet(client):
 @pytest.mark.asyncio
 async def test_get_all_sweets(client):
     token = await register_and_login(client)
+    sweet_data = {
+        "name": "Test Sweet",
+        "price": 10.99,
+        "quantity": 100,
+        "category": "some_valid_category_id",
+    }
 
-    await client.get(
+    category_resp = await client.post(
+        "/api/sweets/categories",
+        json={"name": "Test Category"},
+        headers={"Authorization": token},
+    )
+
+    category_id = category_resp.json()["data"]["_id"]
+    sweet_data["category"] = category_id
+
+    response_sweet = await client.post(
         "/api/sweets",
+        json=sweet_data,
         headers={"Authorization": token},
     )
     response = await client.get("/api/sweets", headers={"Authorization": token})
@@ -117,7 +134,8 @@ async def test_update_sweet(client):
         json={"name": "Barfi", "category": category_id, "price": 30, "quantity": 40},
         headers={"Authorization": token},
     )
-    sweet_id = create_res.json()["data"]["id"]
+    sweet_id = create_res.json()["data"]["_id"]
+    print("Create response", create_res.json())
 
     update_res = await client.put(
         f"/api/sweets/{sweet_id}",
@@ -129,6 +147,7 @@ async def test_update_sweet(client):
         },
         headers={"Authorization": token},
     )
+    print("Update response", update_res.json())
     assert update_res.status_code == 200
     assert update_res.json()["data"]["name"] == "Chocolate Barfi"
     assert update_res.json()["data"]["quantity"] == 45
@@ -145,7 +164,7 @@ async def test_delete_sweet_as_admin(client):
         json={"name": "Halwa", "category": category_id, "price": 40, "quantity": 10},
         headers={"Authorization": token},
     )
-    sweet_id = create_res.json()["data"]["id"]
+    sweet_id = create_res.json()["data"]["_id"]
 
     delete_res = await client.delete(
         f"/api/sweets/{sweet_id}", headers={"Authorization": admin_token}
@@ -164,7 +183,7 @@ async def test_delete_sweet_as_non_admin(client):
         json={"name": "Halwa", "category": category_id, "price": 40, "quantity": 10},
         headers={"Authorization": token},
     )
-    sweet_id = create_res.json()["data"]["id"]
+    sweet_id = create_res.json()["data"]["_id"]
 
     delete_res = await client.delete(
         f"/api/sweets/{sweet_id}", headers={"Authorization": token}
