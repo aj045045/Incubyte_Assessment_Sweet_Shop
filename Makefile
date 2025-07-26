@@ -4,6 +4,7 @@ mongodb-start:
 	docker network inspect mongo-network >/dev/null 2>&1 || docker network create mongo-network
 	docker run -d --name mongodb \
 		--network mongo-network \
+		--restart unless-stopped \
 		-e MONGODB_ROOT_USER=root \
 		-e MONGODB_ROOT_PASSWORD=rootpassword \
 		-e MONGODB_DATABASE=sweet_shop \
