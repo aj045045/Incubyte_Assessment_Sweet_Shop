@@ -28,6 +28,10 @@ export function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SWRConfig
           value={{
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            refreshInterval: 0,
+            dedupingInterval: Infinity,
             fetcher: async (url: string) => {
               await new Promise((resolve) => setTimeout(resolve, 3000));
               const response = await fetch(url);
@@ -36,11 +40,7 @@ export function RootLayout({
                 throw new Error(data?.message || "Failed to fetch data");
               }
               return data.data;
-            },
-            onError: (error) => {
-              const message = error instanceof Error ? error.message : 'An unknown error occurred';
-              toast.error(message);
-            },
+            }
           }}>
           {children}
           <Toaster position="top-right" />

@@ -8,6 +8,22 @@ import { pageLinks } from "@/constant/page-links";
 /* The `SearchBarComp` function is a React component that represents a search bar in a navigation
 component. Here's a breakdown of what it does: */
 export function SearchBarComp() {
+    const [session, setSession] = useState<{ token: string | null; is_admin: boolean }>({
+        token: null,
+        is_admin: false,
+    });
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("token");
+            const role = localStorage.getItem("role"); // assuming "admin" or "user"
+            setSession({
+                token,
+                is_admin: role === "admin",
+            });
+        }
+    }, []);
+
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -23,11 +39,10 @@ export function SearchBarComp() {
 
     const publicLinks = [
         { href: pageLinks.home, label: "Home", icon: <Home size={18} /> },
-        { href: pageLinks.search, label: "Search", icon: <Search size={18} /> },
     ];
 
     const userLinks = [
-        { href: pageLinks.user.profile, label: "Profile", icon: <User size={18} /> },
+        { href: pageLinks.search, label: "Search", icon: <Search size={18} /> },
     ];
 
     return (
@@ -57,6 +72,18 @@ export function SearchBarComp() {
                                 </Link>
                             </CommandItem>
                         ))}
+                        {session.token && (
+                            <>
+                                {userLinks.map((link,idx) => (
+                                    <CommandItem key={idx} asChild>
+                                        <Link href={link.href} className="flex items-center gap-2">
+                                            {link.icon}
+                                            <span>{link.label}</span>
+                                        </Link>
+                                    </CommandItem>
+                                ))}
+                            </>
+                        )}
                     </CommandGroup>
 
                     <CommandSeparator />

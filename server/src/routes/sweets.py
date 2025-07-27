@@ -41,7 +41,7 @@ async def add_sweet(data: SweetCreate, user=Depends(get_current_user)):
 @sweet_router.post(
     "/categories", status_code=status.HTTP_201_CREATED, response_model=ResponseData
 )
-async def add_sweet_category(data: CategoryCreate, user=Depends(get_current_user)):
+async def add_sweet_category(data: CategoryCreate, user=Depends(get_admin_user)):
     """Add a new sweet category.
 
     Args:
@@ -69,6 +69,23 @@ async def add_sweet_category(data: CategoryCreate, user=Depends(get_current_user
         status="success", data={"_id": str(category.id), "name": category.name}
     )
 
+@sweet_router.get(
+    "/categories", status_code=status.HTTP_200_OK, response_model=ResponseData
+)
+async def get_sweet_categories(user=Depends(get_current_user)):
+    """
+    Retrieve all sweet categories.
+
+    Args:
+        user (_type_): Authenticated user making the request.
+
+    Returns:
+        ResponseData: A list of all sweet categories with their IDs and names.
+    """
+    categories = await CategoryModel.find_all().to_list()
+
+    results = [{"id": str(cat.id), "name": cat.name} for cat in categories]
+    return ResponseData(status="success", data=results)
 
 @sweet_router.get("", status_code=200, response_model=ResponseData)
 async def list_sweets(user=Depends(get_current_user)):

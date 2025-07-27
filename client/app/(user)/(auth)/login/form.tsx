@@ -51,7 +51,7 @@ export function LoginForm() {
             console.log("Login data", formData);
             localStorage.setItem("token", formData.token);
             localStorage.setItem("role", formData.role);
-            router.push("/dashboard");
+            router.push("/u/search");
         } catch (error) {
             console.error("Login failed:", error);
         }

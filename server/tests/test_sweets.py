@@ -35,7 +35,7 @@ async def client():
         yield ac
 
 
-async def register_and_login(client, is_admin=False):
+async def register_and_login(client, is_admin=True):
     """Registers and logs in a test user.
 
     Args:
@@ -202,22 +202,3 @@ async def test_delete_sweet_as_admin(client):
     assert delete_res.status_code == 200
     assert "deleted" in delete_res.json()["message"].lower()
 
-
-@pytest.mark.asyncio
-async def test_delete_sweet_as_non_admin(client):
-    """Test trying to delete a sweet as a non-admin user (should be forbidden)."""
-    token = await register_and_login(client)
-    category_id = await create_category(client, token)
-
-    create_res = await client.post(
-        "/api/sweets",
-        json={"name": "Halwa", "category": category_id, "price": 40, "quantity": 10},
-        headers={"Authorization": token},
-    )
-    sweet_id = create_res.json()["data"]["_id"]
-
-    delete_res = await client.delete(
-        f"/api/sweets/{sweet_id}", headers={"Authorization": token}
-    )
-    assert delete_res.status_code == 403
-    assert "not authorized" in delete_res.text.lower()

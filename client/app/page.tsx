@@ -1,6 +1,10 @@
-"use client"
 import Footer05Page from "@/components/footer-05/footer-05";
 import { NavbarComp } from "@/components/navbar";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home | Kata sweets",
+};
 
 /**
  * The `HomePage` function in TypeScript React renders a Navbar component and a Footer component.

@@ -3,12 +3,9 @@ links as key-value pairs. The keys represent different pages or sections of a we
 values are the corresponding URLs for those pages. */
 export const pageLinks = {
     home: '/',
-    search: '/search',
+    search: '/u/search',
     sign_up: '/sign-up',
     login: '/login',
-    admin: {
-        dashboard: '/admin/dashboard',
-    },
     user: {
         profile: '/u/profile',
     },

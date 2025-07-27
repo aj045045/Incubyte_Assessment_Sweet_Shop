@@ -8,8 +8,9 @@ import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerT
 import { SearchBarComp } from "./search";
 import { assetsLinks } from "@/constant/assets-links";
 import { pageLinks } from "@/constant/page-links";
-import { Home, Search, LayoutDashboard } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
 import { Button } from "./ui/button";
+import { syncLocalStorageToCookies } from "@/lib/utils";
 
 /* The `export function NavbarComp()` in the provided code is a React functional component that
 represents a navigation bar for a web application. Here is a breakdown of what the component does: */
@@ -23,15 +24,10 @@ export function NavbarComp() {
 
     const publicLinks = [
         { href: pageLinks.home, label: "Home", icon: <Home size={18} /> },
-        { href: pageLinks.search, label: "Search", icon: <Search size={18} /> },
     ];
 
     const userLinks = [
-        { href: pageLinks.user.profile, label: "Dashboard", icon: <LayoutDashboard size={18} /> },
-    ];
-
-    const adminLinks = [
-        { href: pageLinks.admin.dashboard, label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+        { href: pageLinks.search, label: "Search", icon: <Search size={18} /> },
     ];
 
     useEffect(() => {
@@ -42,6 +38,7 @@ export function NavbarComp() {
                 token,
                 is_admin: role === "admin",
             });
+            syncLocalStorageToCookies();
         }
     }, []);
 
@@ -61,7 +58,7 @@ export function NavbarComp() {
             ))}
             {session.token && (
                 <>
-                    {(session.is_admin ? adminLinks : userLinks).map((link) => (
+                    {userLinks.map((link) => (
                         <Link key={link.href} className={linkStyle} href={link.href}>
                             {link.icon}
                             {link.label}
