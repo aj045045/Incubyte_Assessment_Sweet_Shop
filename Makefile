@@ -26,4 +26,10 @@ test:
 
 # Next.js app
 client:
-	cd client && npm run dev
+	cd client && npm run build && npm run start
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down

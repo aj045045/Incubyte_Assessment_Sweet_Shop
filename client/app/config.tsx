@@ -1,19 +1,9 @@
 'use client'
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import "./globals.css";
 import { SWRConfig } from 'swr';
 import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 /* The code you provided defines a React functional component called `RootLayout`. This component takes
 a single prop `children`, which is of type `React.ReactNode`. Within the component, it returns a
@@ -25,7 +15,7 @@ export function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <SWRConfig
           value={{
             revalidateOnFocus: false,

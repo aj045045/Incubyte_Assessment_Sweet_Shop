@@ -55,7 +55,7 @@ async def register_and_login(client, is_admin=True):
     user_data = {
         "username": "TestAdmin" if is_admin else "TestUser",
         "email": "admin@example.com" if is_admin else "user@example.com",
-        "password": "Password123",
+        "password": "Password@123",
         "is_admin": is_admin,
     }
     await client.post("/api/auth/register", json=user_data)
