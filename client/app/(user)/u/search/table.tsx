@@ -11,14 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { UpdateSweetDialog } from "./update-sweet";
 import { FormHandler } from "@/lib/form-handler";
+import { PurchaseDialog } from "./purchase";
+import { RestockDialog } from "./restock";
+import { useEffect, useState } from "react";
+import { getTokenAndRole } from "@/lib/utils";
 
-// Type Definitions
 type Item = {
     id: string;
     name: string;
-    category: {
-        name: string;
-    };
+    category: { name: string };
     quantity: number;
     price: number;
 };
@@ -39,6 +40,17 @@ type TableComponentProps = {
  * for each column. The user can also delete items by clicking the "Delete" button, which triggers a
  */
 export const TableComponent = ({ data = [], loading, error }: TableComponentProps) => {
+
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const { token, role } = getTokenAndRole();
+
+        if (token && role === 'admin') {
+            setIsAdmin(true);
+        }
+    }, []);
+
     const handleDelete = (id: string) => {
         if (confirm("Are you sure you want to delete this item?")) {
             FormHandler.onSubmitDelete(`/api/sweets/${id}`);
@@ -46,44 +58,82 @@ export const TableComponent = ({ data = [], loading, error }: TableComponentProp
         }
     };
 
-    if (loading) return <div className="p-4">Loading...</div>;
-    if (error) return <div className="p-4 text-red-500">Error loading data</div>;
-    if (data.length === 0) return <div className="p-4">No data found.</div>;
+    if (loading) return <div className="p-6 text-center text-gray-500">Loading...</div>;
+    if (error) return <div className="p-6 text-center text-red-500">Error loading data</div>;
+    if (data.length === 0) return <div className="p-6 text-center text-gray-400">No data found.</div>;
 
     return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="text-left">Name</TableHead>
-                    <TableHead className="text-left">Category</TableHead>
-                    <TableHead className="w-[100px] text-left">Quantity</TableHead>
-                    <TableHead className="w-[120px] text-right">₹ Price</TableHead>
-                    <TableHead className="w-[100px] text-center">Update</TableHead>
-                    <TableHead className="w-[100px] text-center">Delete</TableHead>
-                </TableRow>
-            </TableHeader>
-
-            <TableBody>
-                {data.map((item, index) => (
-                    <TableRow key={item.id ?? `${item.name}-${index}`}>
-                        <TableCell className="font-medium">{item.name}</TableCell>
-                        <TableCell>{item.category?.name || "N/A"}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell className="text-right font-mono">₹ {item.price}</TableCell>
-                        <TableCell className="text-center">
-                            <UpdateSweetDialog id={item.id} name={item.name} price={item.price} quantity={item.quantity} key={index} />
-                        </TableCell>
-                        <TableCell className="text-center">
-                            <Button
-                                variant="destructive"
-                                onClick={() => handleDelete(item.id)}
-                            >
-                                Delete
-                            </Button>
-                        </TableCell>
+        <div className="overflow-x-auto rounded-lg shadow border border-gray-200">
+            <Table className="min-w-full text-sm">
+                <TableHeader>
+                    <TableRow className="bg-accent-foreground/20">
+                        <TableHead className="text-left px-4 py-3">Name</TableHead>
+                        <TableHead className="text-left px-4 py-3">Category</TableHead>
+                        <TableHead className="text-left px-4 py-3">Quantity</TableHead>
+                        <TableHead className="text-right px-4 py-3">Price (₹)</TableHead>
+                        {!isAdmin && (
+                            <>
+                                <TableHead className="text-center px-4 py-3">Purchase</TableHead>
+                            </>)}
+                        {isAdmin && (
+                            <>
+                                <TableHead className="text-center px-4 py-3">Restock</TableHead>
+                                <TableHead className="text-center px-4 py-3">Update</TableHead>
+                                <TableHead className="text-center px-4 py-3">Delete</TableHead>
+                            </>
+                        )}
                     </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                </TableHeader>
+
+                <TableBody>
+                    {data.map((item, index) => (
+                        <TableRow key={item.id ?? `${item.name}-${index}`} className="hover:bg-white transition">
+                            <TableCell className="px-4 py-2 font-medium text-gray-800">{item.name}</TableCell>
+                            <TableCell className="px-4 py-2 text-gray-700">{item.category?.name || "N/A"}</TableCell>
+                            <TableCell className="px-4 py-2">{item.quantity}</TableCell>
+                            <TableCell className="px-4 py-2 text-right font-mono">₹ {item.price}</TableCell>
+
+                            {!isAdmin && (
+                                <>
+                                    {/* Purchase Button */}
+                                    <TableCell className="px-4 py-2 text-center">
+                                        <PurchaseDialog maxQuantity={item.quantity} sweetId={item.id} />
+                                    </TableCell>
+                                </>)}
+
+                            {isAdmin && (
+                                <>
+                                    {/* Restock Button */}
+                                    <TableCell className="px-4 py-2 text-center">
+                                        <RestockDialog sweetId={item.id} />
+                                    </TableCell>
+
+                                    {/* Update Dialog */}
+                                    <TableCell className="px-4 py-2 text-center">
+                                        <UpdateSweetDialog
+                                            id={item.id}
+                                            name={item.name}
+                                            price={item.price}
+                                            quantity={item.quantity}
+                                            key={index}
+                                        />
+                                    </TableCell>
+
+                                    {/* Delete Button */}
+                                    <TableCell className="px-4 py-2 text-center">
+                                        <Button
+                                            variant="destructive"
+                                            className="hover:bg-red-600 hover:text-white"
+                                            onClick={() => handleDelete(item.id)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </TableCell>
+                                </>)}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 };

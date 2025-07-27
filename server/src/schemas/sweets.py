@@ -43,3 +43,12 @@ class CategoryCreate(BaseModel):
         strip_whitespace=True,
         description="Name of the category (1-30 characters, no leading/trailing spaces)",
     )
+
+
+
+class SweetPurchaseRequest(BaseModel):
+    quantity: int = Field(..., gt=0)
+
+
+class SweetRestockRequest(BaseModel):
+    quantity: int = Field(..., gt=0)

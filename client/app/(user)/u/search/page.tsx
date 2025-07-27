@@ -76,7 +76,7 @@ export default function SearchPage() {
 
     const { data, error, isLoading } = useSWR<ApiResponse>(endpoint, fetcher);
     return (
-        <div className="m-5 rounded-md p-2 border border-neutral-300">
+        <div className="m-5 rounded-md px-4 bg-neutral-100 py-8 border border-neutral-300">
             {isLoading && <p>Loading sweets...</p>}
             {error && <p className="text-red-500">Error loading sweets: {error.message}</p>}
             

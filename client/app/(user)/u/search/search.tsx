@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { CategorySearch } from "./category-search";
 import { CategoryDialog } from "./category-dialog";
 import { SweetDialog } from "./sweet-dialog";
+import { getTokenAndRole } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 /**
  * The SearchComponent function in TypeScript React renders a search form with filters for name,
@@ -26,6 +28,16 @@ export function SearchComponent({
     };
     onFilterChange: (key: string, value: string) => void;
 }) {
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        const { token, role } = getTokenAndRole();
+
+        if (token && role === 'admin') {
+            setIsAdmin(true);
+        }
+    }, []);
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8 items-end">
             {/* Name Search */}
@@ -75,10 +87,15 @@ export function SearchComponent({
                 />
             </div>
 
-            {/* Add Category */}
-            <CategoryDialog />
-            {/* Add Sweets */}
-            <SweetDialog />
+            {isAdmin && (
+                <>
+                    {/* Add Category */}
+                    <CategoryDialog />
+
+                    {/* Add Sweets */}
+                    <SweetDialog />
+                </>
+            )}
         </div>
     );
 }

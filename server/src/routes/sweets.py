@@ -4,7 +4,7 @@ from ..models import SweetModel, CategoryModel
 from ..utils.auth import get_current_user, get_admin_user
 from ..schemas.response import ResponseData
 from ..schemas.sweets import SweetCreate, CategoryCreate, SweetUpdate
-
+from ..schemas.sweets import SweetPurchaseRequest, SweetRestockRequest
 from typing import Optional
 
 sweet_router = APIRouter(prefix="/api/sweets", tags=["Sweets"])
@@ -252,3 +252,36 @@ async def delete_sweet(sweet_id: str, user=Depends(get_admin_user)):
 
     await sweet.delete()
     return ResponseData(status="success", message="Sweet successfully deleted")
+
+
+@sweet_router.post("/{sweet_id}/purchase")
+async def purchase_sweet(
+    sweet_id: str,
+    purchase: SweetPurchaseRequest,
+    user=Depends(get_current_user),
+):
+    sweet = await SweetModel.get(sweet_id)
+    if not sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    if sweet.quantity < purchase.quantity:
+        raise HTTPException(status_code=400, detail="Not enough stock available")
+
+    sweet.quantity -= purchase.quantity
+    await sweet.save()
+    return ResponseData(status="success", data=sweet)
+
+
+@sweet_router.post("/{sweet_id}/restock")
+async def restock_sweet(
+    sweet_id: str,
+    restock: SweetRestockRequest,
+    user=Depends(get_admin_user),
+):
+    sweet = await SweetModel.get(sweet_id)
+    if not sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    sweet.quantity += restock.quantity
+    await sweet.save()
+    return ResponseData(status="success", data=sweet)
