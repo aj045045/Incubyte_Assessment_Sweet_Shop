@@ -2,17 +2,23 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const url = request.nextUrl
+  const path = url.pathname
 
-  if (pathname.startsWith('/u/')) {
-    const token = request.cookies.get('token')?.value;
-    const role = request.cookies.get('role')?.value;
+  const isProtectedRoute = path.startsWith('/u/')
 
-    if (!token || !role) {
-      const loginUrl = new URL('/login', request.url);
-      return NextResponse.redirect(loginUrl);
+  if (isProtectedRoute) {
+    const token = request.cookies.get('token')?.value
+    const role = request.cookies.get('role')?.value
+
+    const isAuthenticated = Boolean(token && role)
+
+    if (!isAuthenticated) {
+      const redirectUrl = new URL('/login', request.url)
+      return NextResponse.redirect(redirectUrl)
     }
   }
 
-  return NextResponse.next();
+  // Allow the request to continue
+  return NextResponse.next()
 }

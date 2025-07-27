@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import Optional, List
 from ..models import SweetModel, CategoryModel
 from ..utils.auth import get_current_user, get_admin_user
 from ..schemas.response import ResponseData
-from ..schemas.sweets import SweetCreate, SweetUpdate, CategoryCreate
+from ..schemas.sweets import SweetCreate, CategoryCreate
 from beanie import PydanticObjectId
+from typing import List, Optional
 
 sweet_router = APIRouter(prefix="/api/sweets", tags=["Sweets"])
 
@@ -69,6 +70,7 @@ async def add_sweet_category(data: CategoryCreate, user=Depends(get_admin_user))
         status="success", data={"_id": str(category.id), "name": category.name}
     )
 
+
 @sweet_router.get(
     "/categories", status_code=status.HTTP_200_OK, response_model=ResponseData
 )
@@ -87,6 +89,7 @@ async def get_sweet_categories(user=Depends(get_current_user)):
     results = [{"id": str(cat.id), "name": cat.name} for cat in categories]
     return ResponseData(status="success", data=results)
 
+
 @sweet_router.get("", status_code=200, response_model=ResponseData)
 async def list_sweets(user=Depends(get_current_user)):
     """Retrieve a list of all sweets along with their category info.
@@ -103,112 +106,82 @@ async def list_sweets(user=Depends(get_current_user)):
 
         sweet_list.append(
             {
-                "_id": str(sweet.id),
+                "id": str(sweet.id),
                 "name": sweet.name,
                 "category": {
-                    "_id": str(category.id),
+                    "id": str(category.id),
                     "name": category.name,
                 },
+                "price": sweet.price,
+                "quantity": sweet.quantity,
             }
         )
 
     return ResponseData(status="success", data=sweet_list)
 
 
-@sweet_router.get("/search", status_code=200, response_model=ResponseData)
+@sweet_router.get("/search", response_model=ResponseData)
 async def search_sweets(
-    name: Optional[str] = None,
-    category: Optional[str] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    user=Depends(get_current_user),
+    name: Optional[str] = Query(
+        None, description="Search sweets by name (partial match, case-insensitive)"
+    ),
+    category: Optional[str] = Query(None, description="Exact category name"),
+    minPrice: Optional[float] = Query(None, ge=0, description="Minimum price"),
+    maxPrice: Optional[float] = Query(None, ge=0, description="Maximum price"),
+    min_quantity: Optional[int] = Query(
+        None, ge=0, description="Minimum quantity available"
+    ),
 ):
-    """Search sweets using filters like name, category, and price range.
-
-    Args:
-        name (Optional[str], optional): Sweet name (partial or full) to search. Defaults to None.
-        category (Optional[str], optional): Category name to filter sweets. Defaults to None.
-        min_price (Optional[float], optional): Minimum price of sweets. Defaults to None.
-        max_price (Optional[float], optional): Maximum price of sweets. Defaults to None.
-        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
-
-    Returns:
-        ResponseData: A filtered list of sweets that match the criteria.
     """
-    query = {}
+    Search sweets by name, category, price range, and minimum quantity.
+    Returns a list of sweets matching the criteria with populated category details.
+    """
+    # Start with a base query
+    query = SweetModel.find()
+
+    # Filter by name using regex
     if name:
-        query["name"] = {"$regex": name, "$options": "i"}
+        query = query.find({"name": {"$regex": f".*{name}.*", "$options": "i"}})
+
+    # Filter by category (assuming category is a Link field)
     if category:
         category_doc = await CategoryModel.find_one(CategoryModel.name == category)
-        if category_doc:
-            query["category"] = category_doc.id
-        else:
-            return ResponseData(status="success", data=[])
-    if min_price is not None or max_price is not None:
-        price_range = {}
-        if min_price is not None:
-            price_range["$gte"] = min_price
-        if max_price is not None:
-            price_range["$lte"] = max_price
-        query["price"] = price_range
+        if not category_doc:
+            raise HTTPException(
+                status_code=404, detail=f"Category '{category}' not found"
+            )
+        query = query.find(SweetModel.category.id == category_doc.id)
+    # Filter by price range
+    if minPrice is not None:
+        query = query.find(SweetModel.price >= minPrice)
+    if maxPrice is not None:
+        query = query.find(SweetModel.price <= maxPrice)
 
-    sweets = await SweetModel.find(query).to_list()
+    # Filter by minimum quantity
+    if min_quantity is not None:
+        query = query.find(SweetModel.quantity >= min_quantity)
 
+    # Execute the query and return the results
+    sweets = await query.to_list()
+    sweet_list = []
     for sweet in sweets:
-        await sweet.fetch_link(SweetModel.category)
-    return ResponseData(status="success", data=sweets)
-
-
-@sweet_router.put("/{sweet_id}", status_code=200, response_model=ResponseData)
-async def update_sweet(
-    sweet_id: PydanticObjectId, data: SweetUpdate, user=Depends(get_current_user)
-):
-    """Update a sweet's details such as name, price, quantity, or category.
-
-    Args:
-        sweet_id (PydanticObjectId): The ID of the sweet to be updated.
-        data (SweetUpdate): Fields to update (can be partial).
-        user (_type_, optional): Authenticated user making the request. Defaults to Depends(get_current_user).
-
-    Raises:
-        HTTPException: If the sweet or new category ID does not exist.
-
-    Returns:
-        ResponseData: Updated sweet object with category info.
-    """
-    sweet = await SweetModel.get(sweet_id)
-    if not sweet:
-        raise HTTPException(status_code=404, detail="Sweet not found")
-
-    update_data = data.dict(exclude_unset=True)
-
-    # Handle category update separately
-    if "category" in update_data:
-        category_id = update_data["category"]
+        category_id = sweet.category.ref.id
         category = await CategoryModel.get(category_id)
-        if not category:
-            raise HTTPException(status_code=404, detail="Category not found")
-        sweet.category = (
-            category  # Assign the full document or just category.id if needed
+        print(category.name)
+
+        sweet_list.append(
+            {
+                "id": str(sweet.id),
+                "name": sweet.name,
+                "category": {
+                    "id": str(category.id),
+                    "name": category.name,
+                },
+                "price": sweet.price,
+                "quantity": sweet.quantity,
+            }
         )
-        del update_data["category"]
-
-    for key, value in update_data.items():
-        setattr(sweet, key, value)
-
-    await sweet.save()
-    await sweet.fetch_link(SweetModel.category)
-    response = {
-        "_id": str(sweet.id),
-        "name": sweet.name,
-        "category": {
-            "_id": str(sweet.category.id),
-            "name": sweet.category.name,
-        },
-        "quantity": sweet.quantity,
-    }
-
-    return ResponseData(status="success", data=response)
+    return ResponseData(status="success", data=sweet_list)
 
 
 @sweet_router.delete("/{sweet_id}", status_code=200, response_model=ResponseData)

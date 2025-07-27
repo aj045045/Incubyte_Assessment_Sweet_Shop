@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/components/ui/navigation-menu";
 import Link from "next/link";
@@ -8,44 +9,57 @@ import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerT
 import { SearchBarComp } from "./search";
 import { assetsLinks } from "@/constant/assets-links";
 import { pageLinks } from "@/constant/page-links";
-import { Home, Search } from 'lucide-react';
+import { Home, Search } from "lucide-react";
 import { Button } from "./ui/button";
-import { syncLocalStorageToCookies } from "@/lib/utils";
+import { removeTokenAndRole } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
-/* The `export function NavbarComp()` in the provided code is a React functional component that
-represents a navigation bar for a web application. Here is a breakdown of what the component does: */
+// ⛳ Updated: Added event listener to detect token/role changes dynamically
 export function NavbarComp() {
+    const router = useRouter();
+
     const [session, setSession] = useState<{ token: string | null; is_admin: boolean }>({
         token: null,
         is_admin: false,
     });
 
-    const linkStyle = "flex items-center gap-2 px-3 hover:border-b hover:border-b-neutral-500 hover:border-b-2 hover:py-1 hover:text-neutral-950 transition-all duration-200";
+    const linkStyle =
+        "flex items-center gap-2 px-3 hover:border-b hover:border-b-neutral-500 hover:border-b-2 hover:py-1 hover:text-neutral-950 transition-all duration-200";
 
-    const publicLinks = [
-        { href: pageLinks.home, label: "Home", icon: <Home size={18} /> },
-    ];
+    const publicLinks = [{ href: pageLinks.home, label: "Home", icon: <Home size={18} /> }];
+    const userLinks = [{ href: pageLinks.search, label: "Search", icon: <Search size={18} /> }];
 
-    const userLinks = [
-        { href: pageLinks.search, label: "Search", icon: <Search size={18} /> },
-    ];
+    // ✅ Updated logic: Pull session from localStorage on mount and when storage changes
+    const loadSession = () => {
+        const token = localStorage.getItem("token");
+        const role = localStorage.getItem("role");
+        setSession({
+            token,
+            is_admin: role === "admin",
+        });
+    };
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
-            const role = localStorage.getItem("role"); // assuming "admin" or "user"
-            setSession({
-                token,
-                is_admin: role === "admin",
-            });
-            syncLocalStorageToCookies();
-        }
+        loadSession();
+
+        // 🔁 Listen to localStorage changes across tabs/windows
+        const handleStorageChange = () => {
+            loadSession();
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+        };
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
-        setSession({ token: null, is_admin: false });
+        removeTokenAndRole();
+        setSession({ token: null, is_admin: false }); // ensure local state updates
+        router.push(pageLinks.login);
     };
 
     const navigationLinks = () => (
@@ -56,16 +70,13 @@ export function NavbarComp() {
                     {link.label}
                 </Link>
             ))}
-            {session.token && (
-                <>
-                    {userLinks.map((link) => (
-                        <Link key={link.href} className={linkStyle} href={link.href}>
-                            {link.icon}
-                            {link.label}
-                        </Link>
-                    ))}
-                </>
-            )}
+            {session.token &&
+                userLinks.map((link) => (
+                    <Link key={link.href} className={linkStyle} href={link.href}>
+                        {link.icon}
+                        {link.label}
+                    </Link>
+                ))}
         </div>
     );
 

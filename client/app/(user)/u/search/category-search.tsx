@@ -53,7 +53,7 @@ export function CategorySearch({
 
             if (apiResponse?.status === "success" && Array.isArray(apiResponse.data)) {
                 const mapped = apiResponse.data.map((cat) => ({
-                    value: cat.id,
+                    value: cat.name,
                     label: cat.name,
                 }));
                 setCategories(mapped);

@@ -10,8 +10,8 @@ import { pageLinks } from "@/constant/page-links"
 import * as z from "zod"
 import { loginFormScheme } from "@/interface/form"
 import { FormHandler } from "@/lib/form-handler"
-import { useRouter } from "next/navigation"
 import { useCallback } from "react"
+import { addTokenAndRole } from "@/lib/utils"
 
 interface LoginFormInterface {
     email: string;
@@ -30,7 +30,6 @@ what the code is doing:
 */
 
 export function LoginForm() {
-    const router = useRouter();
 
     const form = useForm<z.infer<typeof loginFormScheme>>({
         resolver: zodResolver(loginFormScheme),
@@ -48,14 +47,14 @@ export function LoginForm() {
                 "Authenticating your credentials",
                 "You're now logged in. Redirecting to your dashboard"
             );
-            console.log("Login data", formData);
             localStorage.setItem("token", formData.token);
             localStorage.setItem("role", formData.role);
-            router.push("/u/search");
+            addTokenAndRole();
+            window.location.reload();
         } catch (error) {
             console.error("Login failed:", error);
         }
-    }, [router]);
+    }, []);
 
     return (
         <Form {...form}>
