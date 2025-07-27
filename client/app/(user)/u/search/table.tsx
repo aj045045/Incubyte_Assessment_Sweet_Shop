@@ -9,6 +9,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { UpdateSweetDialog } from "./update-sweet";
+import { FormHandler } from "@/lib/form-handler";
 
 // Type Definitions
 type Item = {
@@ -28,15 +30,10 @@ type TableComponentProps = {
 };
 
 export const TableComponent = ({ data = [], loading, error }: TableComponentProps) => {
-    const handleUpdate = (id: string) => {
-        console.log("Updating item:", id);
-        // Add your update logic here
-    };
-
     const handleDelete = (id: string) => {
         if (confirm("Are you sure you want to delete this item?")) {
-            console.log("Deleting item:", id);
-            // Add your delete logic here
+            FormHandler.onSubmitDelete(`/api/sweets/${id}`);
+            window.location.reload();
         }
     };
 
@@ -58,20 +55,14 @@ export const TableComponent = ({ data = [], loading, error }: TableComponentProp
             </TableHeader>
 
             <TableBody>
-                {data.map((item,index) => (
+                {data.map((item, index) => (
                     <TableRow key={item.id ?? `${item.name}-${index}`}>
                         <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell>{item.category?.name || "N/A"}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell className="text-right font-mono">₹ {item.price}</TableCell>
                         <TableCell className="text-center">
-                            <Button
-                                variant="secondary"
-                                className="text-blue-700 hover:bg-blue-100 hover:border hover:border-blue-300"
-                                onClick={() => handleUpdate(item.id)}
-                            >
-                                Update
-                            </Button>
+                            <UpdateSweetDialog id={item.id} name={item.name} price={item.price} quantity={item.quantity} key={index} />
                         </TableCell>
                         <TableCell className="text-center">
                             <Button

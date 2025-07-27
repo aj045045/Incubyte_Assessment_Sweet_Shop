@@ -71,11 +71,7 @@ export default function SearchPage() {
         <div className="m-5 rounded-md p-2 border border-neutral-300">
             {isLoading && <p>Loading sweets...</p>}
             {error && <p className="text-red-500">Error loading sweets: {error.message}</p>}
-            <div className="text-sm text-gray-600 mb-2">
-                <strong>Query:</strong> {filterQuery || "None"} <br />
-                <strong>Data:</strong> {JSON.stringify(data && data['data'])}
-            </div>
-
+            
             <SearchComponent filters={filters} onFilterChange={handleFilterChange} />
             <TableComponent
                 data={data?.data}

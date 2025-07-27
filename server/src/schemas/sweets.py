@@ -25,7 +25,6 @@ class SweetUpdate(BaseModel):
     """
 
     name: Optional[str]
-    category: Optional[str]
     price: Optional[float]
     quantity: Optional[int]
 

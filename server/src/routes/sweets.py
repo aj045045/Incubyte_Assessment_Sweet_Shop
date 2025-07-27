@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import Optional, List
+from typing import Optional
 from ..models import SweetModel, CategoryModel
 from ..utils.auth import get_current_user, get_admin_user
 from ..schemas.response import ResponseData
-from ..schemas.sweets import SweetCreate, CategoryCreate
-from beanie import PydanticObjectId
-from typing import List, Optional
+from ..schemas.sweets import SweetCreate, CategoryCreate, SweetUpdate
+
+from typing import Optional
 
 sweet_router = APIRouter(prefix="/api/sweets", tags=["Sweets"])
 
@@ -24,7 +24,7 @@ async def add_sweet(data: SweetCreate, user=Depends(get_current_user)):
     Returns:
         ResponseData: Contains the created sweet object.
     """
-    category = await CategoryModel.get(data.category)
+    category = await CategoryModel.find_one(CategoryModel.name == data.category)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
@@ -131,6 +131,7 @@ async def search_sweets(
     min_quantity: Optional[int] = Query(
         None, ge=0, description="Minimum quantity available"
     ),
+    user=Depends(get_current_user),
 ):
     """
     Search sweets by name, category, price range, and minimum quantity.
@@ -182,6 +183,53 @@ async def search_sweets(
             }
         )
     return ResponseData(status="success", data=sweet_list)
+
+
+@sweet_router.put("/{sweet_id}", response_model=ResponseData, status_code=200)
+async def update_sweet(
+    sweet_id: str,
+    update_data: SweetUpdate,
+    user=Depends(get_admin_user),
+):
+    """
+    Update an existing sweet's details. Only accessible by admins.
+
+    Args:
+        sweet_id (str): ID of the sweet to update.
+        update_data (SweetUpdate): Fields to update.
+        user: Authenticated admin user.
+
+    Raises:
+        HTTPException: If the sweet doesn't exist or category is invalid.
+
+    Returns:
+        ResponseData: Updated sweet info.
+    """
+    sweet = await SweetModel.get(sweet_id)
+    if not sweet:
+        raise HTTPException(status_code=404, detail="Sweet not found")
+
+    # Update fields only if they are provided
+    if update_data.name is not None:
+        sweet.name = update_data.name
+
+    if update_data.price is not None:
+        sweet.price = update_data.price
+
+    if update_data.quantity is not None:
+        sweet.quantity = update_data.quantity
+
+    await sweet.save()
+
+    return ResponseData(
+        status="success",
+        data={
+            "id": str(sweet.id),
+            "name": sweet.name,
+            "price": sweet.price,
+            "quantity": sweet.quantity,
+        },
+    )
 
 
 @sweet_router.delete("/{sweet_id}", status_code=200, response_model=ResponseData)
