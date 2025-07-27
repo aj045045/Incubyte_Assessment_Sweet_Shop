@@ -23,12 +23,12 @@ interface TokenInterface {
     role: string;
 
 }
+
 /* This code snippet defines a React functional component called `LoginForm`. Here's a breakdown of
 what the code is doing:
     - Get User email and Password
     - Get JWT token to store detail in the localstorage
 */
-
 export function LoginForm() {
 
     const form = useForm<z.infer<typeof loginFormScheme>>({

@@ -5,6 +5,15 @@ import { FormHandler } from "@/lib/form-handler";
 import { useZodForm } from "@/lib/use-zod-form";
 import * as z from "zod";
 
+/**
+ * The `CategoryDialog` function creates a dialog component for adding a new category with form
+ * validation and submission functionality.
+ * @returns The `CategoryDialog` component is being returned. It is a dialog component that allows
+ * users to add a new category by entering the name of the category and saving it. The component
+ * includes form validation for the category name field and handles form submission by calling the
+ * `onSubmit` function.
+ */
+
 export function CategoryDialog() {
     const categorySchema = z.object({
         name: z.string().min(3, 'Category name is required'),

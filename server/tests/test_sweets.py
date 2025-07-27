@@ -22,6 +22,9 @@ async def clean_db():
         database=client.sweet_shop,
         document_models=[UserModel, SweetModel, CategoryModel],
     )
+    await UserModel.find_all().delete()
+    await SweetModel.find_all().delete()
+    await CategoryModel.find_all().delete()
 
 
 @pytest_asyncio.fixture

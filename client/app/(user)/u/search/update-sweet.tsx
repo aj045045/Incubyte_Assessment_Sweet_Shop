@@ -6,6 +6,16 @@ import { useZodForm } from "@/lib/use-zod-form";
 import * as z from "zod";
 
 
+/**
+ * The `UpdateSweetDialog` function in TypeScript React is a component that allows users to update
+ * sweet details in an inventory system with form validation using Zod schema.
+ * @param  - The `UpdateSweetDialog` function is a React component that renders a dialog box for
+ * updating sweet details in an inventory system. It takes in four parameters:
+ * @returns The `UpdateSweetDialog` component is being returned. It is a dialog component that allows
+ * the user to update the details of a sweet in the inventory. The dialog contains form fields for
+ * updating the name, price, and quantity of the sweet. The form is validated using the `sweetSchema`
+ * defined using Zod. When the form is submitted, the data is sent to the server using `Form
+ */
 export function UpdateSweetDialog({ id, name, price, quantity }: { id: string; name: string, price: number, quantity: number }) {
     const sweetSchema = z.object({
         name: z.string().min(3, 'Name must be at least 3 characters'),

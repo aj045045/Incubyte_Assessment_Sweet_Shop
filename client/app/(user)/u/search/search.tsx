@@ -5,6 +5,15 @@ import { CategorySearch } from "./category-search";
 import { CategoryDialog } from "./category-dialog";
 import { SweetDialog } from "./sweet-dialog";
 
+/**
+ * The SearchComponent function in TypeScript React renders a search form with filters for name,
+ * category, min price, and max price.
+ * @param  - The `SearchComponent` function is a React component that displays a search form with
+ * filters for name, category, min price, and max price. It takes two props:
+ * @returns The `SearchComponent` function is returning a JSX element that represents a search
+ * component with input fields for filtering by name, category, minimum price, and maximum price. It
+ * also includes components for adding a new category and a new sweet item.
+ */
 export function SearchComponent({
     filters,
     onFilterChange,

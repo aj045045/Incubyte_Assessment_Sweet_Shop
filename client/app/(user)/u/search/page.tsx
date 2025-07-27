@@ -38,6 +38,14 @@ const fetcher = async (url: string) => {
     return res.json();
 };
 
+/**
+ * The `SearchPage` function in TypeScript React handles filtering and displaying sweets data based on
+ * user input.
+ * @returns The `SearchPage` component is being returned. It includes state for filters, a function to
+ * handle filter changes, memoized filter query and endpoint, and uses SWR for data fetching. It
+ * renders a loading message, error message if any, a `SearchComponent` for filter input, and a
+ * `TableComponent` to display data.
+ */
 export default function SearchPage() {
     const [filters, setFilters] = useState({
         name: "",

@@ -29,6 +29,15 @@ type TableComponentProps = {
     error: any;
 };
 
+/**
+ * The `TableComponent` function renders a table with data, allowing users to update and delete items
+ * with confirmation.
+ * @param {TableComponentProps}  - - `data`: An array of items to be displayed in the table.
+ * @returns The `TableComponent` function is returning a table component that displays data in a
+ * tabular format. The table consists of headers for columns such as Name, Category, Quantity, Price,
+ * Update, and Delete. For each item in the `data` array, a row is generated with corresponding values
+ * for each column. The user can also delete items by clicking the "Delete" button, which triggers a
+ */
 export const TableComponent = ({ data = [], loading, error }: TableComponentProps) => {
     const handleDelete = (id: string) => {
         if (confirm("Are you sure you want to delete this item?")) {

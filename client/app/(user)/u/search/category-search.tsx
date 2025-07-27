@@ -35,6 +35,8 @@ type CategoryOption = {
     label: string;
 };
 
+/* This `CategorySearch` function is a React component that provides a searchable dropdown menu for
+selecting categories. Here's a breakdown of what it does: */
 export function CategorySearch({
     value,
     setValue,
