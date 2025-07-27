@@ -12,5 +12,21 @@ export const assetsLinks = {
     login: {
         src: '/login.svg',
         alt: 'Login Image',
+    },
+    cake: {
+        src: '/cake.jpg',
+        alt: 'Cake Image',
+    },
+    chocolate_cookies: {
+        src: '/chocolate-cookies.jpg',
+        alt: 'Chocolate cookies Image',
+    },
+    donuts: {
+        src: '/donuts.jpg',
+        alt: 'Donuts Images',
+    },
+    cookies: {
+        src: '/cookies.jpg',
+        alt: 'Cookies Image',
     }
-}
+}    

@@ -13,6 +13,17 @@ import { Home, Search } from "lucide-react";
 import { Button } from "./ui/button";
 import { removeTokenAndRole } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+    ShoppingCart,
+    Tags,
+    Heart,
+    User,
+    Phone,
+    Info,
+    Store,
+    PackageSearch,
+} from "lucide-react";
+
 
 // ⛳ Updated: Added event listener to detect token/role changes dynamically
 export function NavbarComp() {
@@ -26,7 +37,13 @@ export function NavbarComp() {
     const linkStyle =
         "flex items-center gap-2 px-3 hover:border-b hover:border-b-neutral-500 hover:border-b-2 hover:py-1 hover:text-neutral-950 transition-all duration-200";
 
-    const publicLinks = [{ href: pageLinks.home, label: "Home", icon: <Home size={18} /> }];
+
+    const publicLinks = [
+        { href: pageLinks.home, label: "Home", icon: <Home size={18} /> },
+        { href: "#", label: "Categories", icon: <Tags size={18} /> },
+        { href: "#", label: "About Us", icon: <Info size={18} /> },
+    ];
+
     const userLinks = [{ href: pageLinks.search, label: "Search", icon: <Search size={18} /> }];
 
     // ✅ Updated logic: Pull session from localStorage on mount and when storage changes
@@ -64,8 +81,8 @@ export function NavbarComp() {
 
     const navigationLinks = () => (
         <div className="flex flex-col lg:flex-row items-center md:space-x-2 space-y-5 lg:space-y-0">
-            {publicLinks.map((link) => (
-                <Link key={link.href} className={linkStyle} href={link.href}>
+            {publicLinks.map((link, index) => (
+                <Link key={`${link.href}-${index}`} className={linkStyle} href={link.href}>
                     {link.icon}
                     {link.label}
                 </Link>

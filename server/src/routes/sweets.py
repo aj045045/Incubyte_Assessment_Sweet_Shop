@@ -253,13 +253,31 @@ async def delete_sweet(sweet_id: str, user=Depends(get_admin_user)):
     await sweet.delete()
     return ResponseData(status="success", message="Sweet successfully deleted")
 
-
 @sweet_router.post("/{sweet_id}/purchase")
 async def purchase_sweet(
     sweet_id: str,
     purchase: SweetPurchaseRequest,
     user=Depends(get_current_user),
 ):
+    """
+    Purchase a sweet item by reducing its quantity.
+
+    This endpoint allows a logged-in user to purchase a specific quantity of a sweet.
+    It checks if the item exists and if there's enough stock before proceeding.
+
+    Args:
+        sweet_id (str): The ID of the sweet to purchase.
+        purchase (SweetPurchaseRequest): Object containing the quantity to purchase.
+        user (UserModel): The authenticated user making the purchase (injected via dependency).
+
+    Returns:
+        ResponseData: JSON response with the updated sweet data.
+
+    Raises:
+        HTTPException:
+            - 404 if the sweet does not exist.
+            - 400 if requested quantity exceeds available stock.
+    """
     sweet = await SweetModel.get(sweet_id)
     if not sweet:
         raise HTTPException(status_code=404, detail="Sweet not found")
@@ -271,13 +289,30 @@ async def purchase_sweet(
     await sweet.save()
     return ResponseData(status="success", data=sweet)
 
-
 @sweet_router.post("/{sweet_id}/restock")
 async def restock_sweet(
     sweet_id: str,
     restock: SweetRestockRequest,
     user=Depends(get_admin_user),
 ):
+    """
+    Restock a sweet item by increasing its quantity (Admin-only).
+
+    Only admins can use this endpoint to add more inventory to a sweet item.
+    The endpoint checks if the item exists and then increases its quantity.
+
+    Args:
+        sweet_id (str): The ID of the sweet to restock.
+        restock (SweetRestockRequest): Object containing the quantity to add.
+        user (UserModel): The authenticated admin user (injected via dependency).
+
+    Returns:
+        ResponseData: JSON response with the updated sweet data.
+
+    Raises:
+        HTTPException:
+            - 404 if the sweet does not exist.
+    """
     sweet = await SweetModel.get(sweet_id)
     if not sweet:
         raise HTTPException(status_code=404, detail="Sweet not found")
