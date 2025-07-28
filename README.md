@@ -2,7 +2,7 @@
 
 A full-stack **Sweet Shop Management** application built with **FastAPI** and **Next.js**, designed to streamline the daily operations of a sweet shop—inventory tracking, user management, and sweet cataloging—all in one place.
 
-[![Watch Demo](docs/home-1.png)](./docs/incubyte.mkv)
+[![Watch Demo](docs/home-1.png)](https://youtu.be/WqTic5RrKEY)
 
 > 📺 **Click the image above to watch the full demo video.**
 
@@ -188,7 +188,7 @@ tests/test_sweets.py ......          [100%]
 
 Here are some snapshots of the Sweet Shop Management System in action:
 
-> 🎥 **[Click here to view the full demo video](./docs/incubyte.mkv)** \
+> 🎥 **[Click here to view the full demo video](https://youtu.be/WqTic5RrKEY)** \
 > A walkthrough of the system—from login to sweet inventory management.
 
 ### 🔐 Authentication
@@ -270,4 +270,4 @@ Here are some snapshots of the Sweet Shop Management System in action:
 > 🎥 **Demo Video**
 > Watch a full walkthrough of the Sweet Shop Management System in action—from login to inventory updates.
 
-🔗 [Click here to view the demo video](./docs/incubyte.mkv)
+🔗 [Click here to view the demo video](https://youtu.be/WqTic5RrKEY)
