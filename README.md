@@ -181,6 +181,34 @@ tests/test_sweets.py ......          [100%]
 
 ============================== 14 passed in 5.99s ==============================
 ```
+```
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.11-final-0 _______________
+
+Name                        Stmts   Miss  Cover
+-----------------------------------------------
+src/main.py                    14      4    71%
+src/models/__init__.py          3      0   100%
+src/models/category.py          6      0   100%
+src/models/sweets.py           10      0   100%
+src/models/users.py             9      0   100%
+src/routes/auth.py             29      0   100%
+src/routes/sweets.py          102     15    85%
+src/schemas/__init__.py         0      0   100%
+src/schemas/response.py         8      0   100%
+src/schemas/sweets.py          17      0   100%
+src/schemas/token.py            4      0   100%
+src/schemas/user_login.py       4      0   100%
+src/utils/__init__.py           0      0   100%
+src/utils/auth.py              27      3    89%
+src/utils/db.py                 8      3    62%
+src/utils/env.py               11      0   100%
+src/utils/password.py           6      0   100%
+-----------------------------------------------
+TOTAL                         258     25    90%
+============================== 14 passed in 7.18s ==============================
+
+```
 
 ---
 
