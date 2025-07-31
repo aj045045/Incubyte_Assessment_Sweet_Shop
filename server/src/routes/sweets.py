@@ -33,6 +33,7 @@ async def add_sweet(data: SweetCreate, user=Depends(get_current_user)):
         category=category,
         price=data.price,
         quantity=data.quantity,
+        expiry_date=data.expiry_date,
     )
     await sweet.insert()
     await sweet.fetch_link(SweetModel.category)
@@ -253,6 +254,7 @@ async def delete_sweet(sweet_id: str, user=Depends(get_admin_user)):
     await sweet.delete()
     return ResponseData(status="success", message="Sweet successfully deleted")
 
+
 @sweet_router.post("/{sweet_id}/purchase")
 async def purchase_sweet(
     sweet_id: str,
@@ -288,6 +290,7 @@ async def purchase_sweet(
     sweet.quantity -= purchase.quantity
     await sweet.save()
     return ResponseData(status="success", data=sweet)
+
 
 @sweet_router.post("/{sweet_id}/restock")
 async def restock_sweet(

@@ -6,6 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from src.models import UserModel, SweetModel, CategoryModel
 from src.utils.env import env_settings
 import pytest_asyncio
+import datetime
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -89,6 +90,7 @@ async def test_add_sweet(client):
             "category": category_name,
             "price": 10,
             "quantity": 100,
+            "expiry_date": str(datetime.datetime.now().date().isoformat()),
         },
         headers={"Authorization": admin_token},
     )
@@ -97,6 +99,7 @@ async def test_add_sweet(client):
     data = response.json()["data"]
     assert data["name"] == "Ladoo"
     assert data["quantity"] == 100
+    assert data["expiry_date"] != None
 
 
 @pytest.mark.asyncio

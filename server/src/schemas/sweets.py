@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+import datetime
 
 
 class SweetCreate(BaseModel):
@@ -13,6 +14,11 @@ class SweetCreate(BaseModel):
     category: str
     price: float
     quantity: int
+    expiry_date: datetime.date = Field(
+        default_factory=lambda: (
+            datetime.datetime.today() + datetime.timedelta(days=1)
+        ).date()
+    )
 
 
 class SweetUpdate(BaseModel):
@@ -43,7 +49,6 @@ class CategoryCreate(BaseModel):
         strip_whitespace=True,
         description="Name of the category (1-30 characters, no leading/trailing spaces)",
     )
-
 
 
 class SweetPurchaseRequest(BaseModel):

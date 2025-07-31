@@ -1,6 +1,8 @@
 from beanie import Document, Link
 from pydantic import Field
 from .category import CategoryModel
+from bson import ObjectId
+import datetime
 
 
 class SweetModel(Document):
@@ -20,6 +22,11 @@ class SweetModel(Document):
     category: Link[CategoryModel]
     price: float = Field(..., ge=0)
     quantity: int = Field(..., ge=0)
+    expiry_date: datetime.date = Field(...)
 
     class Settings:
         name = "sweets"
+
+    class Config:
+        json_encoders = {ObjectId: str}
+        allow_population_by_field_name = True
